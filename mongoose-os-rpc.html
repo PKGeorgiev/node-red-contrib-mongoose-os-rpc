@@ -1,0 +1,104 @@
+<script type="text/javascript">
+    RED.nodes.registerType('mongoose-os-rpc',{
+        category: 'function',
+        color: '#a6bbcf',
+        defaults: {
+            name: {value: ""},
+            address: {value: "", required:true },
+            func: {value: "", required:true },
+            args: {value: "{}", required:true }
+        },
+        inputs:1,
+        outputs:1,
+        icon: "file.png",
+        label: function() {
+            console.log("Label");
+            console.log(this);
+            return this.name || this.func || "Mongoose OS RPC";
+        },
+        oneditprepare: function() {
+            $('#node-input-args').typedInput({
+              default: 'json',
+              types:['json']
+            });
+                        
+        },
+        oneditsave: function() {
+          if ($('#node-input-func').val()) {
+            this.nodeName = $('#node-input-func').val();
+          }
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="mongoose-os-rpc">
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-address"><i class="icon-tag"></i> Address</label>
+        <input type="text" id="node-input-address" placeholder="e.g. http://ipOrDnsName/rpc">
+    </div>
+    <div class="form-row">
+        <label for="node-input-func"><i class="icon-tag"></i> Function</label>
+        <input type="text" id="node-input-func" placeholder="e.g. Sys.GetInfo">
+    </div>
+    <div class="form-row">
+        <label for="node-input-args"><i class="icon-tag"></i> Arguments</label>
+        <input type="text" id="node-input-args" placeholder="Arguments (JSON string)">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="mongoose-os-rpc">
+    <p>A node for calling functions via RPC on Mongoose OS enabled devices (ESP8266 etc.)</p>
+    <p>This node connects to a Mongoose OS enabled device, executes given function by its name (optionally passing arguments) then returning function's result (asynchronously). 
+    The function can be specified dynamically via input message where <code>topic</code> is function's name and <code>payload</code> contains the arguments (JSON string or JSON object).</p>
+    
+  <h3>Inputs</h3>
+    <dl class="message-properties">
+      <dt>topic 
+        <span class="property-type">string</span></dt>
+      <dd> Function's name.</dd>
+      <dt>payload
+          <span class="property-type">JSON string | JSON object</span>
+      </dt>
+      <dd> Function's arguments </dd>
+    </dl>
+    
+    <h3>Outputs</h3>
+    <dl class="message-properties">
+      <dt>payload 
+        <span class="property-type">JSON object</span></dt>
+      <dd>contains the result of executed function</dd>
+    </dl>
+    
+    <h3>Details</h3>
+    <p>
+      This library relies on mongoose-os-rpc package to connect and remotely execute functions (RPC) via particular transport.
+      <br />The <code>address</code> property has the following format depending of the transport being used:
+      <ul>
+        <li><code>http://deviceIpOrDnsName/rpc</code> - when using HTTP transport</li>
+        <li><code>&nbsp;&nbsp;ws://deviceIpOrDnsName/rpc</code> - when using WebSocket transport</code></li>
+        <li><code>mqtt://deviceIpOrDnsName/device_id</code> - when using MQTT transport</li>
+      </ul>
+    </p>
+    <p>The function can be specified dynamically via input message where <code>topic</code> is function's name and <code>payload</code> contains the arguments (JSON string or JSON object).</p>
+    <p><b>Note</b>: To override function/args via input message you must specify <b>both</b> <code>topic</code> and <code>payload</code>.</p>
+    <h4>Error handling</h4>
+    <p>To handle RPC related errors (timeouts, unsupported commands etc.) you need to put a Catch node in your flow. 
+    The <code>payload</code> of the Catch node will contain error's object:
+      <br /><br /><code>{code: xyz, message: "specific error message"}</code>.
+      <br /><br />The <code>code</code> property maps to standard http error codes.</p>
+    <p>All transport errors are reported via node.error and will be recorded in NodeRED's log (i.e. they will not reach any Catch node).</p>
+    
+    <h3>References</h3>
+    <ul>
+        <li><a href="https://mongoose-os.com/docs/quickstart/setup.html">Mongoose OS installation and configuration</a> - how to install and configure Mongoose OS on supported devices</li>
+        <li><a href="https://github.com/mongoose-os-libs/rpc-common">Mongoose OS RPC protocol specs</a> - description of RPC packet structure (JSON based)</li>
+        <li><a href="https://mongoose-os.com/docs/book/rpc.html">Mongoose OS RPC - Remote Procedure Calls</a> - description of RPC in Mongoose OS</li>
+        <li><a href="https://github.com/PKGeorgiev/mongoose-os-rpc">Mongoose OS RPC node.js package</a> - the home of mongoose-os-rpc package</li>
+        <li><a href="https://github.com/PKGeorgiev/node-red-contrib-mongoose-os-rpc">Mongoose OS RPC node for NodeRED</a> - the home of node-red-contrib-mongoose-os-rpc</li>
+    </ul>
+    
+</script>
